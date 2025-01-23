@@ -1,14 +1,9 @@
-import TabLayout from './TabLayout'
-import TabLayoutOutlet from './TabLayoutOutlet'
-import { UseTabLayoutParams } from './type'
+/* eslint-disable react-refresh/only-export-components */
 
-// use outside component, no rerender needed
-export const staticUseTabLayout = (params: UseTabLayoutParams) => {
-  const TabLayoutComponent = <TabLayout {...params} />
-  const TabLayoutOutletComponent = <TabLayoutOutlet tabMeta={params.tabMeta} />
+export { default as TabLayoutProvider } from './TabLayoutProvider'
+export { default as TabLayoutTabs } from './TabLayoutTabs'
+export { default as TabLayoutOutlet } from './TabLayoutOutlet'
 
-  return {
-    TabLayoutComponent,
-    TabLayoutOutletComponent,
-  }
-}
+export { useCloseBlocker } from './close-blocker'
+
+export { useTabLayoutContext } from './context/export'

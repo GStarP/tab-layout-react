@@ -1,8 +1,5 @@
-/**
- * extract pathname
- * @param href url after host part
- * @returns url.pathname part
- */
+import type { Location } from 'react-router'
+
 export const hrefToPathname = (href: string): string => {
   for (let i = 0; i < href.length; i++) {
     if (href[i] === '?') {
@@ -16,6 +13,6 @@ export const hrefToPathname = (href: string): string => {
   return href
 }
 
-export const parseValidHref = (location: Location): string => {
+export const locationToHref = (location: Location): string => {
   return location.pathname + location.search + location.hash
 }
