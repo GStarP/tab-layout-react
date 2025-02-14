@@ -10,12 +10,13 @@ export default function App() {
       <Routes>
         <Route path="/guest" element={<Guest />} />
 
-        <Route path="/main" element={<Main />}>
-          <Route index element={<Welcome />} />
+        <Route path="/" element={<Main />}>
+          <Route index element={<Navigate to="/welcome" replace />} />
+          <Route path="welcome" element={<Welcome />} />
           <Route path="form" element={<Form />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/main" replace />} />
+        <Route path="*" element={<Navigate to="/welcome" replace />} />
       </Routes>
     </BrowserRouter>
   )

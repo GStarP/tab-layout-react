@@ -1,17 +1,32 @@
-export type ITabMeta = {
-  // pathname serves as key
+import { ReactNode } from 'react'
+
+export type ILocation = {
   pathname: string
-  label: string
-  closable: boolean
-  cacheable: boolean
+  search: string
 }
 
 export type ITab = {
-  pathname: string
-  // the complete href, like {pathname}?{search}#{hash}
+  key: string
   href: string
-  // one tab may show variable of names
-  label?: string
+  label: string
+  fixed?: boolean
+  children: ReactNode
+  closeBlocker?: () => Promise<boolean>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  createScope?: () => Record<string, any>
 }
 
-export type TabLayoutCloseBlocker = () => Promise<boolean>
+export type TabLayoutAPI = {
+  getTabs: () => ITab[]
+  updateTab(tabKey: string, tab: Partial<ITab>): void
+  closeTab(tabKey: string): Promise<boolean>
+}
+
+export type TabLayoutProps = {
+  apiRef: { current: TabLayoutAPI | undefined }
+  createTab: (location: {
+    pathname: string
+    search: string
+  }) => Omit<ITab, 'key' | 'href'> | undefined
+  defaultTabs?: ITab[]
+}

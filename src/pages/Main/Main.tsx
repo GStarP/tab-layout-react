@@ -1,65 +1,46 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { TabLayout, TabLayoutProps } from '../../components/tab-layout'
+import Welcome from './Welcome/Welcome'
+import { TabLayoutApiRef } from '../../global'
+import Form from './Form/Form'
+import Left from './Left'
+import { createFormScope } from './Form/scope'
 
-import {
-  TabLayoutOutlet,
-  TabLayoutProvider,
-  TabLayoutTabs,
-} from '../../components/tab-layout'
+const CREATE_TAB_FUNCTION: TabLayoutProps['createTab'] = (location) => {
+  switch (location.pathname) {
+    case '/welcome':
+      return {
+        label: 'Welcome!',
+        children: <Welcome />,
+        fixed: true,
+      }
+    case '/form':
+      return {
+        label: 'Form',
+        children: <Form />,
+        createScope: createFormScope,
+      }
+    default:
+      return undefined
+  }
+}
 
-const DEFAULT_TABS: React.ComponentProps<
-  typeof TabLayoutProvider
->['defaultTabs'] = [
+const DEFAULT_TABS: TabLayoutProps['defaultTabs'] = [
   {
-    pathname: '/main',
-    href: '/main',
-  },
-]
-const TAB_METAS: React.ComponentProps<typeof TabLayoutProvider>['tabMetas'] = [
-  {
-    pathname: '/main',
-    label: 'Welcome',
-    closable: false,
-    cacheable: false,
-  },
-  {
-    pathname: '/main/form',
-    label: 'Edit Form',
-    closable: true,
-    cacheable: true,
+    key: '/welcome',
+    href: '/welcome',
+    ...CREATE_TAB_FUNCTION({ pathname: '/welcome', search: '' })!,
   },
 ]
 
 export default function Main() {
-  const [count, setCount] = useState(0)
-  const navigate = useNavigate()
-
   return (
-    <div className="flex flex-col h-full">
-      <TabLayoutProvider defaultTabs={DEFAULT_TABS} tabMetas={TAB_METAS}>
-        <TabLayoutTabs />
-
-        <div className="flex-1 flex border-t">
-          <div className="border-r w-52">
-            <button
-              className="border w-full py-4"
-              onClick={() => setCount((v) => v + 1)}
-            >
-              {count}
-            </button>
-            <div
-              className="border-b py-4 hover:bg-black/5 hover:cursor-pointer w-full text-center"
-              onClick={() =>
-                navigate(`/main/form?key=${String(Math.random())}`)
-              }
-            >
-              Edit Form
-            </div>
-          </div>
-
-          <TabLayoutOutlet />
-        </div>
-      </TabLayoutProvider>
+    <div className="flex-1 flex border-t h-full">
+      <Left />
+      <TabLayout
+        apiRef={TabLayoutApiRef}
+        createTab={CREATE_TAB_FUNCTION}
+        defaultTabs={DEFAULT_TABS}
+      />
     </div>
   )
 }

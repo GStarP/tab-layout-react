@@ -1,0 +1,16 @@
+.tab-layout-tabs::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tab-layout-tabs::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tab-layout-tabs::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 8px;
+}
+
+.tab-layout-tabs::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}

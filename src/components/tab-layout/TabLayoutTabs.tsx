@@ -1,72 +1,29 @@
-import { memo, useContext, useMemo } from 'react'
-import { useLocation, useNavigate } from 'react-router'
-
-import { useMemoizedFn } from 'ahooks'
+import { memo, useMemo } from 'react'
+import { ITab } from './types'
 import { twJoin } from 'tailwind-merge'
-import { ITab, ITabMeta } from './types'
-import { useSyncTabs } from './hooks/use-sync-tabs'
-import { InternalContext, TabsContext } from './context/internal'
-import { getCloseBlocker } from './close-blocker'
 
-export default function TabLayoutTabs() {
-  const navigate = useNavigate()
-  const location = useLocation()
+type Props = {
+  tabs: ITab[]
+  activeTabKey: string
+  onTabClick: (tab: ITab) => void
+  onTabClose: (tabKey: string) => void
+}
 
-  const { tabMetaMap, aliveRef } = useContext(InternalContext)
-  const { tabs, setTabs } = useContext(TabsContext)
-
+export default function TabLayoutTabs(props: Props) {
   const activeTab = useMemo(
-    () => tabs.find((tab) => tab.pathname === location.pathname),
-    [location.pathname, tabs]
+    () => props.tabs.find((tab) => tab.key === props.activeTabKey),
+    [props.activeTabKey, props.tabs]
   )
 
-  // sync tabs state with router's location
-  useSyncTabs(setTabs, tabMetaMap)
-
-  const closeTab = useMemoizedFn(async (pathname: string) => {
-    // if this tab has a blocker, leave only when blocker returns `false`
-    const blocker = getCloseBlocker(pathname)
-    if (blocker) {
-      const result = await blocker()
-      if (result) return
-    }
-
-    const newTabs = tabs.filter((tab) => tab.pathname !== pathname)
-    setTabs(newTabs)
-
-    // * destroy the tab's page content
-    aliveRef.current?.destroy(pathname)
-
-    // if closing active tab, activate the last tab
-    // we have default tabs, so last tab must exist
-    if (activeTab?.pathname === pathname) {
-      const lastTab = newTabs.at(-1)
-      if (lastTab) {
-        navigate(lastTab.href)
-      }
-    }
-  })
-
-  ////
-  // Tab
-  ////
-  const tabOnActivate: TabProps['onActivate'] = useMemoizedFn((tab) => {
-    navigate(tab.href)
-  })
-  const tabOnClose: TabProps['onClose'] = useMemoizedFn((tab) => {
-    closeTab(tab.pathname)
-  })
-
   return (
-    <div className="flex">
-      {tabs.map((tab) => (
+    <div className="flex border-b w-full overflow-x-auto tab-layout-tabs overflow-y-hidden">
+      {props.tabs.map((tab) => (
         <MemoTab
-          key={tab.pathname}
+          key={tab.key}
           tab={tab}
           active={tab === activeTab}
-          onActivate={tabOnActivate}
-          onClose={tabOnClose}
-          {...tabMetaMap.get(tab.pathname)!}
+          onTabClick={props.onTabClick}
+          onTabClose={props.onTabClose}
         />
       ))}
     </div>
@@ -76,27 +33,40 @@ export default function TabLayoutTabs() {
 type TabProps = {
   tab: ITab
   active: boolean
-  onActivate: (tab: ITab) => void
-  onClose: (tab: ITab) => void
-} & ITabMeta
+} & Pick<Props, 'onTabClick' | 'onTabClose'>
 function Tab(props: TabProps) {
   return (
     <div
       className={twJoin(
-        'hover:cursor-pointer flex basis-40 flex-shrink px-2',
-        props.active ? 'bg-blue-200' : undefined
+        'relative flex h-8 flex-shrink basis-32 select-none items-center overflow-hidden border-r px-2 hover:cursor-pointer hover:bg-slate-100 before:absolute before:top-0 before:left-0 before:right-0 before:h-0.5 min-w-16',
+        props.active ? 'before:bg-blue-400' : undefined
       )}
       onClick={() => {
         if (props.active) return
-        props.onActivate(props.tab)
+        props.onTabClick(props.tab)
       }}
     >
-      <div className="flex-1 truncate">{props.tab.label ?? props.label}</div>
+      <div className="flex-1 truncate text-center">{props.tab.label}</div>
 
-      {props.closable && (
-        <div className="ml-1" onClick={() => props.onClose(props.tab)}>
-          x
-        </div>
+      {!props.tab.fixed && (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+          className="ml-1 size-4 rounded-full border-gray-500 text-gray-500 hover:border"
+          onClick={(e) => {
+            e.stopPropagation()
+            props.onTabClose(props.tab.key)
+          }}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M6 18 18 6M6 6l12 12"
+          />
+        </svg>
       )}
     </div>
   )
